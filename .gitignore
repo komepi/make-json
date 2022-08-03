@@ -1,0 +1,10 @@
+.venv
+.venv_pv
+db_copy
+__pycache__
+.vscode
+**.egg-info
+dist
+build
+.pytest_cache
+.eggs
