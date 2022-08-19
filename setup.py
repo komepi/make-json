@@ -16,7 +16,7 @@ setup_requires = [
 ]
 
 console_scripts = [
-    'make_json=make_json.call:main',
+    'make_json=make_json.call:call',
 ]
 
 setup(

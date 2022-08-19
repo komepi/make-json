@@ -1,8 +1,15 @@
+"""コマンドライン処理
+コマンドラインによって呼び出された際の処理
+"""
 import argparse
 from pathlib import Path
 from make_json.app import ShapingDict, JSON2DICT, DICT2JSON
 
-def main():
+def call():
+    """コマンドラインによって呼び出された際の処理
+    Raises:
+        Exception: ファイルが存在しない、もしくは文字列が辞書型にできないとき
+    """
     parser = argparse.ArgumentParser(description=Descriptions.program)
     parser.add_argument('input', type=str, help=Descriptions.input)
     parser.add_argument('mode', choices=['d', 'j'],help=Descriptions.mode)
@@ -40,4 +47,4 @@ class Descriptions:
     file = "inputに指定したものがファイル名なのか文字列なのか。ファイル名の場合はこのオプションを追加"
     indent = "整形した際に、空白をいくつにするか。"
 if __name__ == "__main__":
-    main()
+    call()

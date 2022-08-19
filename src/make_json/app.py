@@ -1,14 +1,42 @@
+"""辞書型を整形する
+
+"""
 import ast
 JSON2DICT = 1
 DICT2JSON = 2
 class ShapingDict:
+    """辞書型を整形
+
+    python, jsonの辞書型を文字列として受け取り、それをpython, jsonの
+    辞書型に整形した文字列を返す。
+    
+    Attributes:
+        indent (int): スペースによるインデント数
+    """
 
     indent=2
     def __init__(self, indent, mode):
+        """初期化
+
+        Args:
+            indent (int): スペースによるインデント数
+            mode (int): python->jsonかjson->pythonかを指定.JSON2DICTかDICT2JSONをわたす。
+        """
         self.indent = indent
         self.mode = mode
     
     def dict2json(self, data):
+        """受け取った文字列を整形済みの文字列にする
+
+        Args:
+            data (str): 整形対象の文字列
+
+        Raises:
+            Exception: pythonの文字列に変形できない場合発生
+
+        Returns:
+            str: 整形済み文字列
+        """
         try:
             data = ast.literal_eval(data)
             if not type(data) in [dict, list]:
@@ -23,6 +51,23 @@ class ShapingDict:
         return result
 
     def dicts(self, data, result, indent=0):
+        """辞書型を整形
+        辞書型を受け取り、整形する。
+        Args:
+            data (dict): 
+            result (str): 現在整形済みの文字列
+            indent (int, optional): 対象辞書型が存在するインデント. Defaults to 0.
+
+        Returns:
+            str: 現在整形済みの文字列
+        Examples:
+            dataとして{"key1":"value1", "key2":"value2"}を受け取るとする。
+            以下のように整形される。
+            '{
+                "key1": "value1",
+                "key2": "value2"
+            }'
+        """
         lens =len(data)
         result+='{\n'
         indent +=1
@@ -43,6 +88,23 @@ class ShapingDict:
         return result
 
     def lists(self, data, result, indent=0):
+        """リスト型を整形
+        リスト型を受け取り、整形する。
+        Args:
+            data (list): 
+            result (str): 現在整形済みの文字列
+            indent (int, optional): 対象辞書型が存在するインデント. Defaults to 0.
+
+        Returns:
+            str: 現在整形済みの文字列
+        Examples:
+            dataとして["value1", "value2"]を受け取るとする。
+            以下のように整形される。
+            '[
+                "value1",
+                "value2"
+            ]'
+        """
         lens = len(data)
         result+='[\n'
         indent+=1
@@ -61,6 +123,16 @@ class ShapingDict:
         return result
 
     def exchange(self, data):
+        """jsonとpythonでの違いの修正
+        Trueとtrue, Falseとfalse, Noneとnullを変換する。
+        それ以外はそのまま返す。
+
+        Args:
+            data (str): 変換対象の文字列
+
+        Returns:
+            str: 変換後の文字列
+        """
         if self.mode == DICT2JSON:
             str_t1 = "True"
             str_f1 = "False"
