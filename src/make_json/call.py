@@ -7,6 +7,7 @@ from make_json.app import ShapingDict, JSON2DICT, DICT2JSON
 
 def call():
     """コマンドラインによって呼び出された際の処理
+
     Raises:
         Exception: ファイルが存在しない、もしくは文字列が辞書型にできないとき
     """

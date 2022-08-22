@@ -2,8 +2,10 @@
 
 """
 import ast
+
 JSON2DICT = 1
 DICT2JSON = 2
+
 class ShapingDict:
     """辞書型を整形
 
@@ -14,8 +16,11 @@ class ShapingDict:
         indent (int): スペースによるインデント数
     """
 
+
     indent=2
-    def __init__(self, indent, mode):
+
+
+    def __init__(self, indent: int, mode: int):
         """初期化
 
         Args:
@@ -24,8 +29,9 @@ class ShapingDict:
         """
         self.indent = indent
         self.mode = mode
-    
-    def dict2json(self, data):
+
+
+    def dict2json(self, data: str):
         """受け取った文字列を整形済みの文字列にする
 
         Args:
@@ -50,16 +56,19 @@ class ShapingDict:
             result = self.dicts(data,result)
         return result
 
-    def dicts(self, data, result, indent=0):
+
+    def dicts(self, data: dict, result: str, indent=0):
         """辞書型を整形
         辞書型を受け取り、整形する。
+        
         Args:
-            data (dict): 
+            data (dict): 整形対象データ
             result (str): 現在整形済みの文字列
             indent (int, optional): 対象辞書型が存在するインデント. Defaults to 0.
 
         Returns:
             str: 現在整形済みの文字列
+
         Examples:
             dataとして{"key1":"value1", "key2":"value2"}を受け取るとする。
             以下のように整形される。
@@ -87,19 +96,24 @@ class ShapingDict:
 
         return result
 
-    def lists(self, data, result, indent=0):
+
+    def lists(self, data: list, result: str, indent=0):
         """リスト型を整形
         リスト型を受け取り、整形する。
+
         Args:
-            data (list): 
+            data (list): 整形対象データ
             result (str): 現在整形済みの文字列
             indent (int, optional): 対象辞書型が存在するインデント. Defaults to 0.
 
         Returns:
             str: 現在整形済みの文字列
+
         Examples:
             dataとして["value1", "value2"]を受け取るとする。
+            
             以下のように整形される。
+            
             '[
                 "value1",
                 "value2"
@@ -122,7 +136,8 @@ class ShapingDict:
         result+=']'
         return result
 
-    def exchange(self, data):
+
+    def exchange(self, data: str):
         """jsonとpythonでの違いの修正
         Trueとtrue, Falseとfalse, Noneとnullを変換する。
         それ以外はそのまま返す。

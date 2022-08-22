@@ -1,7 +1,9 @@
 from setuptools import setup, find_packages
 from os.path import basename, splitext
 from glob import glob
+from sphinx.setup_command import BuildDoc
 
+cmdclass = {"build_sphinx": BuildDoc}
 tests_requires = [
     "pytest==7.1.2",
     "pytest-mock==3.8.2"
