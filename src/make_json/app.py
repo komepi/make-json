@@ -64,7 +64,8 @@ class ShapingDict:
         Args:
             data (dict): 整形対象データ
             result (str): 現在整形済みの文字列
-            indent (int, optional): 対象辞書型が存在するインデント. Defaults to 0.
+            indent (int, optional): 対象辞書型が存在するインデント.
+                                    Defaults to 0.
 
         Returns:
             str: 現在整形済みの文字列
