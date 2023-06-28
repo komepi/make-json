@@ -6,8 +6,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from make_json.app import DICT2JSON, JSON2DICT, ShapingDict
 
 str_data = ["True", "False", "None", "true", "false", "null", "", "1", "abc"]
-result_dict2json = ['true', 'false', 'null', '"true"', '"false"', '"null"', '""', '"1"', '"abc"']
-result_json2dict = ['"True"', '"False"', '"None"', 'True', 'False', 'None', '""', '"1"', '"abc"']
+result_dict2json = ['true', 'false', 'null', 'true', 'false', 'null', '""', '1', '"abc"']
+result_json2dict = ['True', 'False', 'None', 'True', 'False', 'None', '""', '1', '"abc"']
 
 @pytest.mark.parametrize(('datas', 'result', 'mode'),
                          [

@@ -2,6 +2,13 @@
 
 """
 import ast
+from make_json.config import (
+    TRUE_DICT,
+    FALSE_DICT,
+    NULL_DICT,
+    TRUE_JSON,
+    FALSE_JSON,
+    NULL_JSON)
 
 JSON2DICT = 1
 DICT2JSON = 2
@@ -29,6 +36,19 @@ class ShapingDict:
         """
         self.indent = indent
         self.mode = mode
+        
+        if mode == JSON2DICT:
+            self.exchange_config = {
+                "true":{"to":TRUE_DICT, "from": TRUE_JSON},
+                "false":{"to":FALSE_DICT, "from":FALSE_JSON},
+                "null":{"to":NULL_DICT, "from": NULL_JSON}
+            }
+        elif mode == DICT2JSON:
+            self.exchange_config = {
+                "true":{"to":TRUE_JSON, "from": TRUE_DICT},
+                "false":{"to":FALSE_JSON, "from":FALSE_DICT},
+                "null":{"to":NULL_JSON, "from": NULL_DICT}
+            }
 
 
     def dict2json(self, data: str):
@@ -149,28 +169,42 @@ class ShapingDict:
         Returns:
             str: 変換後の文字列
         """
-        if self.mode == DICT2JSON:
-            str_t1 = "True"
-            str_f1 = "False"
-            str_n1 = "None"
-            str_t2 = "true"
-            str_f2 = "false"
-            str_n2 = "null"
-        elif self.mode == JSON2DICT:
-            str_t1 = "true"
-            str_f1 = "false"
-            str_n1 = "null"
-            str_t2 = "True"
-            str_f2 = "False"
-            str_n2 = "None"
+        def _exchange(data, config):
+            if data == config["from"]:
+                return config["to"]
+            else: # data == config["to"]:
+                return data
+        if data in list(self.exchange_config["true"].values()):
+            data = _exchange(data, self.exchange_config["true"])
+        elif data in list(self.exchange_config["false"].values()):
+            data = _exchange(data, self.exchange_config["false"])
+        elif data in list(self.exchange_config["null"].values()):
+            data = _exchange(data, self.exchange_config["null"])
         else:
             return '"{}"'.format(data)
-        if data == str_t1:
-            data = str_t2
-        elif data == str_f1:
-            data = str_f2
-        elif data == str_n1:
-            data = str_n2
-        else:
-            data = '"{}"'.format(data)
         return data
+        #if self.mode == DICT2JSON:
+        #    str_t1 = "True"
+        #    str_f1 = "False"
+        #    str_n1 = "None"
+        #    str_t2 = "true"
+        #    str_f2 = "false"
+        #    str_n2 = "null"
+        #elif self.mode == JSON2DICT:
+        #    str_t1 = "true"
+        #    str_f1 = "false"
+        #    str_n1 = "null"
+        #    str_t2 = "True"
+        #    str_f2 = "False"
+        #    str_n2 = "None"
+        #else:
+        #    return '"{}"'.format(data)
+        #if data == str_t1:
+        #    data = str_t2
+        #elif data == str_f1:
+        #    data = str_f2
+        #elif data == str_n1:
+        #    data = str_n2
+        #else:
+        #    data = '"{}"'.format(data)
+        #return data
