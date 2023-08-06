@@ -2,6 +2,7 @@
 
 """
 import ast
+from collections import OrderedDict
 from make_json.config import (
     TRUE_DICT,
     FALSE_DICT,
@@ -27,7 +28,8 @@ class ShapingDict:
     indent=2
 
 
-    def __init__(self, indent: int, mode: int):
+    def __init__(self, indent: int, mode: int, is_shaping=True,
+                 is_ordereddict_to_dict=True):
         """初期化
 
         Args:
@@ -36,7 +38,12 @@ class ShapingDict:
         """
         self.indent = indent
         self.mode = mode
-        
+        self.is_shaping=is_shaping
+        self.is_ordereddict_to_dict=is_ordereddict_to_dict
+        if self.is_shaping:
+            self.newline_str="\n"
+        else:
+            self.newline_str=""
         if mode == JSON2DICT:
             self.exchange_config = {
                 "true":{"to":TRUE_DICT, "from": TRUE_JSON},
@@ -50,28 +57,53 @@ class ShapingDict:
                 "null":{"to":NULL_JSON, "from": NULL_DICT}
             }
 
+    def _convert_ordereddict2dict(self,item: object):
+        """OrderedDictを含むオブジェクトを辞書型に変換
 
-    def dict2json(self, data: str):
+        :param item: OrderedDictを含む変換対象
+        :type item: object
+        :return: 変換後
+        :rtype: dict, list
+        """
+        if isinstance(item, list):
+            return [self._convert_ordereddict2dict(elem) for elem in item]
+        elif isinstance(item, tuple):
+            return tuple(self._convert_ordereddict2dict(elem) for elem in item)
+        elif isinstance(item, OrderedDict):
+            return {key: self._convert_ordereddict2dict(value) for key, value in item.items()}
+        elif isinstance(item, dict):
+            return {key: self._convert_ordereddict2dict(value) for key, value in item.items()}
+        else:
+            return item
+
+    def convert(self, data: str):
         """受け取った文字列を整形済みの文字列にする
 
         Args:
             data (str): 整形対象の文字列
 
-        Raises:
+        Raises:x
             Exception: pythonの文字列に変形できない場合発生
 
         Returns:
             str: 整形済み文字列
         """
         try:
-            data = ast.literal_eval(data)
-            if not type(data) in [dict, list]:
+            if "OrderedDict" in data:
+                data = eval(data)
+                if not self.is_ordereddict_to_dict:
+                    data = self._convert_ordereddict2dict(data)
+            else:
+                data = ast.literal_eval(data)
+            if not type(data) in [dict, list, OrderedDict]:
                 raise Exception
         except:
             raise Exception('辞書型に形式があっていない')
         result = ''
         if isinstance(data,list):
             result = self.lists(data,result)
+        elif isinstance(data,OrderedDict):
+            result = self.ordereddicts(data,result)
         elif isinstance(data,dict):
             result = self.dicts(data,result)
         return result
@@ -99,20 +131,22 @@ class ShapingDict:
             }'
         """
         lens =len(data)
-        result+='{\n'
+        result+='{'+self.newline_str
         indent +=1
         for i, key in enumerate(data):
             value=data.get(key)
-            result+='{indent}"{v}": '.format(indent=" "*indent*self.indent,v=key)
+            result+='{indent}"{v}": '.format(indent=" "*indent*self.indent if self.is_shaping else "",v=key)
             if isinstance(value,list):
                 result=self.lists(value,result,indent)
+            elif isinstance(value, OrderedDict):
+                result = self.ordereddicts(value,result,indent)
             elif isinstance(value, dict):
                 result = self.dicts(value,result,indent)
             else:
-                result+=self.exchange(str(value))
-            result+=',\n' if i < lens-1 else '\n'
+                result+=self.exchange(value)
+            result+=','+self.newline_str if i < lens-1 else self.newline_str
         indent-=1
-        result+=' '*indent*self.indent
+        result+=' '*indent*self.indent if self.is_shaping else ""
         result+='}'
 
         return result
@@ -141,23 +175,46 @@ class ShapingDict:
             ]'
         """
         lens = len(data)
-        result+='[\n'
+        result+='['+self.newline_str
         indent+=1
         for i, value in enumerate(data):
-            result+=' '*indent*self.indent
+            result+=' '*indent*self.indent if self.is_shaping else ""
             if isinstance(value,list):
                 result = self.lists(value,result,indent)
+            elif isinstance(value,OrderedDict):
+                result = self.ordereddicts(value,result,indent)
             elif isinstance(value,dict):
                 result = self.dicts(value,result,indent)
             else:
-                result+=self.exchange(str(value))
-            result+=',\n' if i <lens-1 else '\n'
+                result+=self.exchange(value)
+            result+=','+self.newline_str if i <lens-1 else self.newline_str
         indent-=1
-        result+=' '*indent*self.indent
+        result+=' '*indent*self.indent if self.is_shaping else ''
         result+=']'
         return result
 
-
+    def ordereddicts(self, data, result, indent=0):
+        lens = len(data)
+        result += 'OrderedDict(['+self.newline_str
+        indent+=1
+        for i, key in enumerate(data):
+            value = data.get(key)
+            result += '{indent}("{v}", '.format(indent=" "*indent*self.indent if self.is_shaping else "", v=key)
+            if isinstance(value, list):
+                result=self.lists(value,result,indent)
+            elif isinstance(value,OrderedDict):
+                result=self.ordereddicts(value,result,indent)
+            elif isinstance(value, dict):
+                result=self.dicts(value,result,indent)
+            else:
+                result+=self.exchange(value)
+            result += '),'+self.newline_str if i < lens-1 else ')'+self.newline_str
+        indent-=1
+        result+=' '*indent*self.indent if self.is_shaping else ""
+        result+='])'
+        
+        return result
+    
     def exchange(self, data: str):
         """jsonとpythonでの違いの修正
         Trueとtrue, Falseとfalse, Noneとnullを変換する。
@@ -174,37 +231,16 @@ class ShapingDict:
                 return config["to"]
             else: # data == config["to"]:
                 return data
-        if data in list(self.exchange_config["true"].values()):
-            data = _exchange(data, self.exchange_config["true"])
-        elif data in list(self.exchange_config["false"].values()):
-            data = _exchange(data, self.exchange_config["false"])
-        elif data in list(self.exchange_config["null"].values()):
-            data = _exchange(data, self.exchange_config["null"])
+        _data = str(data)
+        if _data in list(self.exchange_config["true"].values()):
+            data = _exchange(_data, self.exchange_config["true"])
+        elif _data in list(self.exchange_config["false"].values()):
+            data = _exchange(_data, self.exchange_config["false"])
+        elif _data in list(self.exchange_config["null"].values()):
+            data = _exchange(_data, self.exchange_config["null"])
         else:
-            return '"{}"'.format(data)
+            if isinstance(data,str):
+                return '"{}"'.format(_data)
+            elif isinstance(data,int) or isinstance(data,float):
+                return '{}'.format(_data)
         return data
-        #if self.mode == DICT2JSON:
-        #    str_t1 = "True"
-        #    str_f1 = "False"
-        #    str_n1 = "None"
-        #    str_t2 = "true"
-        #    str_f2 = "false"
-        #    str_n2 = "null"
-        #elif self.mode == JSON2DICT:
-        #    str_t1 = "true"
-        #    str_f1 = "false"
-        #    str_n1 = "null"
-        #    str_t2 = "True"
-        #    str_f2 = "False"
-        #    str_n2 = "None"
-        #else:
-        #    return '"{}"'.format(data)
-        #if data == str_t1:
-        #    data = str_t2
-        #elif data == str_f1:
-        #    data = str_f2
-        #elif data == str_n1:
-        #    data = str_n2
-        #else:
-        #    data = '"{}"'.format(data)
-        #return data

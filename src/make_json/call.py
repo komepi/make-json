@@ -16,6 +16,8 @@ def call():
     parser.add_argument('mode', choices=['d', 'j'],help=Descriptions.mode)
     parser.add_argument('--file','-f',action='store_true', help=Descriptions.file)
     parser.add_argument('-indent', type=int, default=2, help=Descriptions.indent)
+    parser.add_argument('--ns',action='store_false', help=Descriptions.is_shaping)
+    parser.add_argument('--od',action='store_true',help=Descriptions.ordereddict_to_dict)
     args = parser.parse_args()
     if args.mode == 'd':
         mode = JSON2DICT
@@ -30,10 +32,10 @@ def call():
             raise Exception("ファイルが存在しません")
     else:
         data = args.input
-    change_tool = ShapingDict(args.indent, mode)
-    result = change_tool.dict2json(data)
+    change_tool = ShapingDict(args.indent, mode,args.ns,args.od)
+    result = change_tool.convert(data)
     print(result)
-    
+
 class Descriptions:
     program = \
     "これは辞書型の文字列を整形するプログラムです。以下の変換に対応しています。\n"+\
@@ -47,5 +49,7 @@ class Descriptions:
     mode = "pythonの辞書型にするのか、jsonの辞書型にするのか。pythonの場合はd、jsonの場合はjを指定"
     file = "inputに指定したものがファイル名なのか文字列なのか。ファイル名の場合はこのオプションを追加"
     indent = "整形した際に、空白をいくつにするか。"
+    is_shaping= "インデントなど整形するか。一列の文字列として出力する場合は指定"
+    ordereddict_to_dict="OrderedDictをdictに変換するか否か。OrderedDictのまま出力する場合は指定"
 if __name__ == "__main__":
     call()
