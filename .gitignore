@@ -9,3 +9,5 @@ build
 .pytest_cache
 .eggs
 _build
+.tox
+res

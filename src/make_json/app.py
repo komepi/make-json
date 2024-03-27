@@ -67,14 +67,13 @@ class ShapingDict:
         """
         if isinstance(item, list):
             return [self._convert_ordereddict2dict(elem) for elem in item]
-        elif isinstance(item, tuple):
+        if isinstance(item, tuple):
             return tuple(self._convert_ordereddict2dict(elem) for elem in item)
-        elif isinstance(item, OrderedDict):
+        if isinstance(item, OrderedDict):
             return {key: self._convert_ordereddict2dict(value) for key, value in item.items()}
-        elif isinstance(item, dict):
+        if isinstance(item, dict):
             return {key: self._convert_ordereddict2dict(value) for key, value in item.items()}
-        else:
-            return item
+        return item
 
     def convert(self, data: str):
         """受け取った文字列を整形済みの文字列にする
@@ -135,7 +134,9 @@ class ShapingDict:
         indent +=1
         for i, key in enumerate(data):
             value=data.get(key)
-            result+='{indent}"{v}": '.format(indent=" "*indent*self.indent if self.is_shaping else "",v=key)
+            result+='{indent}"{v}": '.format(
+                indent=" "*indent*self.indent if self.is_shaping else "",
+                v=key)
             if isinstance(value,list):
                 result=self.lists(value,result,indent)
             elif isinstance(value, OrderedDict):
@@ -199,7 +200,9 @@ class ShapingDict:
         indent+=1
         for i, key in enumerate(data):
             value = data.get(key)
-            result += '{indent}("{v}", '.format(indent=" "*indent*self.indent if self.is_shaping else "", v=key)
+            result += '{indent}("{v}", '.format(
+                indent=" "*indent*self.indent if self.is_shaping else "",
+                v=key)
             if isinstance(value, list):
                 result=self.lists(value,result,indent)
             elif isinstance(value,OrderedDict):
@@ -212,9 +215,9 @@ class ShapingDict:
         indent-=1
         result+=' '*indent*self.indent if self.is_shaping else ""
         result+='])'
-        
+
         return result
-    
+
     def exchange(self, data: str):
         """jsonとpythonでの違いの修正
         Trueとtrue, Falseとfalse, Noneとnullを変換する。
